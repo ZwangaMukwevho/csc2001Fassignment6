@@ -28,6 +28,7 @@ public static void main( String [ ] args )
 	    // Counter used in filtering lines from input to seperate different lines based on what they represent
 		int count = 0;
 		int num = 0;
+		int loopLength = 0;
 		String temp = "";
 
             // Read the edges and insert
@@ -36,18 +37,18 @@ public static void main( String [ ] args )
             {
                 line = graphFile.nextLine( );
                 StringTokenizer st = new StringTokenizer( line );
-		num = st.countTokens( )/3;
-
+		num = st.countTokens( );
+		loopLength = (num-1)/2;
                     if( num >= 3  )
                     {
 			temp = st.nextToken( );
-			for (int i = 0; i< num;i++){
+			for (int i = 0; i< loopLength ;i++){
 				System.out.println(temp);
 				System.out.println(st.nextToken( ));
 				System.out.println(st.nextToken( ));
 				System.out.println("");
 				}
-                        continue;
+                        
                     }
 
 		else{
