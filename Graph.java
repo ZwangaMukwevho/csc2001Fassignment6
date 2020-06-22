@@ -134,6 +134,26 @@ public class Graph
             System.out.println( );
         }
     }
+	
+	public double getCost(String destName){
+		Vertex w = vertexMap.get( destName );
+		return w.dist;
+		}
+
+	 public String printPath1( String destName )
+    {
+        Vertex w = vertexMap.get( destName );
+        if( w == null )
+            throw new NoSuchElementException( "Destination vertex not found" );
+        else if( w.dist == INFINITY )
+            return "Unreachable";
+        else
+        {
+            
+            return printPath1( w ) ;
+           
+        }
+    }
 
     /**
      * If vertexName is not present, add it to vertexMap.
@@ -164,7 +184,23 @@ public class Graph
         }
         System.out.print( dest.name );
     }
-    
+    	
+	String Output =  "";
+	private String printPath1( Vertex dest )
+    {
+        if( dest.prev != null )
+        {
+            printPath1( dest.prev );
+            //System.out.print( " to " );
+        }
+        //System.out.print( dest.name );
+	Output = Output + " " + dest.name;
+	return Output;
+    }
+
+	// Function to reset output
+	private void resetOut(){
+		Output = "";}
     /**
      * Initializes the vertex output info prior to running
      * any shortest path algorithm.
@@ -249,6 +285,7 @@ public class Graph
             }
         }
     }
+	
     
 
     /**
@@ -278,12 +315,73 @@ public class Graph
             g.printPath( destName );
         }
         catch( NoSuchElementException e )
-          { return false; }
+          {  System.err.println( e ); }
         catch( GraphException e )
           { System.err.println( e ); }
         return true;
     }
+/**
+     * Process a the distance from victim to hospital; returns nothing.
+     */
 
+	public static void processRequest1( String start, String dest, Graph g )
+    {
+        try
+        {
+            //String startName = in.nextLine( );
+            //String destName = in.nextLine( );
+            //String alg = in.nextLine( );
+            
+            g.dijkstra( start );
+            //g.printPath( dest );
+            //g.printPath( destName );
+        }
+        catch( NoSuchElementException e )
+          { System.err.println( e ); }
+        catch( GraphException e )
+          { System.err.println( e ); }
+    }
+
+	public static void pathN(String start, String dest, Graph g){
+			String out;
+			String out1;
+			String total;
+
+			g.dijkstra(dest );
+			//g.printPath( start );
+            		out1 = g.printPath1(start);
+
+			g.dijkstra( start );
+            		//g.printPath( dest );
+			out = g.printPath1(dest);
+			
+			total = out1+out;
+			int length = total.length()/2;
+			
+			
+			System.out.println(total.substring(1,length));
+			g.resetOut();
+			
+		}
+	 
+	public static double calculateCost(String start, String dest, Graph g){
+			
+			// Variables used in calculating cost
+			double cost1;
+			double cost2;
+			double totalCost;
+			
+			g.dijkstra(dest );
+			String o = g.printPath1(start);
+			cost1 = g.getCost(dest);
+
+			g.dijkstra( start );
+			String u = g.printPath1(start);
+			cost2 = g.getCost(start);
+
+			totalCost = cost1 + cost2;
+			return totalCost;
+		}
     /**
      * A main routine that:
      * 1. Reads a file containing edges (supplied as a command-line parameter);
@@ -299,31 +397,84 @@ public class Graph
         try
         {   	
             //FileReader fin = new FileReader(args[0]);
-        	FileReader fin = new FileReader("Graph1.txt");
+        	FileReader fin = new FileReader("Graph2.txt");
             Scanner graphFile = new Scanner( fin );
 
             // Read the edges and insert
-            String line;
+		String line;
+
+		//Declaring variables that will be used in the loop
+		int num;
+		int nodes;
+		int loopLength;
+		int count = 0;
+		String temp;
+		int victimsNo;
+		int hospitalsNo;
+
+		String[] Hospitals;
+		String[] Victims;
+
+		// Skipping the first line which represents the number of nodes
+		graphFile.nextLine();	
+
             while( graphFile.hasNextLine( ) )
             {
                 line = graphFile.nextLine( );
                 StringTokenizer st = new StringTokenizer( line );
 
-                try
-                {
-                    if( st.countTokens( ) != 3 )
-                    {
-                        System.err.println( "Skipping ill-formatted line " + line );
-                        continue;
+		num = st.countTokens();
+		loopLength = (num-1)/2;
+
+               
+		// Adding nodes to graph
+                    if( num >= 3 && count == 0 )
+                    {	temp = st.nextToken( );
+			for (int i = 0; i< loopLength ;i++){
+				String source = temp;
+				String dest = st.nextToken( );
+				int    cost    = Integer.parseInt( st.nextToken( ) );
+				g.addEdge( source, dest, cost );
+				
+				}
+                       
                     }
-                    String source  = st.nextToken( );
-                    String dest    = st.nextToken( );
-                    int    cost    = Integer.parseInt( st.nextToken( ) );
-                    g.addEdge( source, dest, cost );
-                }
-                catch( NumberFormatException e )
-                  { System.err.println( "Skipping ill-formatted line " + line ); }
+             
+			else{
+			count = 1;
+			StringTokenizer st1 = new StringTokenizer( line );
+			victimsNo = Integer.parseInt( st1.nextToken( ) );
+
+			line = graphFile.nextLine(); 
+			Hospitals = line.split(" ");
+			
+			line = graphFile.nextLine();			
+			StringTokenizer st2 = new StringTokenizer( line );
+			hospitalsNo = Integer.parseInt( st2.nextToken( ) );
+			
+			line = graphFile.nextLine();
+			Victims = line.split(" ");
+
+			System.out.println("Cost "+calculateCost(Victims[0],Hospitals[0],g));
+			//For looping for displaying output
+			/*for (int j = 0; j<victimsNo;j++){
+
+				System.out.println("victim "+Victims[j]);
+				for(int k = 0; k<hospitalsNo;k++){
+					System.out.println("hospitals "+Hospitals[k]);
+					
+					pathN(Victims[j],Hospitals[k],g);
+					System.out.println("Cost "+calculateCost(Victims[j],Hospitals[k],g));
+					}
+				}*/ 
+
+			}
+                
+                
              }
+
+	// Make while loop to calculate distance from victim to hopsital
+	
          }
          catch( IOException e )
            { System.err.println( e ); }
@@ -331,8 +482,10 @@ public class Graph
          System.out.println( "File read..." );
          System.out.println( g.vertexMap.size( ) + " vertices" );
 
-         Scanner in = new Scanner( System.in );
-         while( processRequest( in, g ) )
-             ;
+	
+	
+         //Scanner in = new Scanner( System.in );
+         //while( processRequest( in, g ) )
+          //   ;
     }
 }
