@@ -4,7 +4,8 @@
  * and open the template in the editor.
  */
 
-
+import java.io.PrintWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.*;
 
 // Used to signal violations of preconditions for
 // various shortest path algorithms.
@@ -135,10 +137,7 @@ public class Graph
         }
     }
 	
-	public double getCost(String destName){
-		Vertex w = vertexMap.get( destName );
-		return w.dist;
-		}
+	double outcost = 0.0 ;
 
 	 public String printPath1( String destName )
     {
@@ -149,11 +148,18 @@ public class Graph
             return "Unreachable";
         else
         {
-            
+         outcost = outcost+ w.dist ;   
             return printPath1( w ) ;
            
         }
     }
+
+		public double getCost(){
+		return outcost;
+		}
+
+		public void clearCost(){
+		outcost = 0.0;}
 
     /**
      * If vertexName is not present, add it to vertexMap.
@@ -361,7 +367,7 @@ public class Graph
 			
 			System.out.println(total.substring(1,length));
 			g.resetOut();
-			
+			g.clearCost();
 		}
 	 
 	public static double calculateCost(String start, String dest, Graph g){
@@ -373,15 +379,18 @@ public class Graph
 			
 			g.dijkstra(dest );
 			String o = g.printPath1(start);
-			cost1 = g.getCost(dest);
+			cost2 = g.getCost();
+			g.clearCost();
 
 			g.dijkstra( start );
-			String u = g.printPath1(start);
-			cost2 = g.getCost(start);
+			String u = g.printPath1(dest);
+			cost1 = g.getCost();
+			g.clearCost();
 
-			totalCost = cost1 + cost2;
-			return totalCost;
-		}
+			g.resetOut();
+			
+			return cost1+cost2;
+		} 
     /**
      * A main routine that:
      * 1. Reads a file containing edges (supplied as a command-line parameter);
@@ -396,8 +405,29 @@ public class Graph
         Graph g = new Graph( );
         try
         {   	
+	
+	    PrintWriter writer = new PrintWriter("meme.txt", "UTF-8");
+          	Scanner in = new Scanner( System.in );
+
+		String input = in.nextLine();
+		int looplength =  Integer.parseInt(input );
+		for(int n = 0;n<looplength;n++){
+			input = in.nextLine();
+			writer.println(input);
+							}
+
+	
+		Scanner in1 = new Scanner( System.in );					
+		for(int n = 0;n<4;n++){
+			input = in1.nextLine();
+			writer.println(input);
+			
+				}
+		
+
+		writer.close();
             //FileReader fin = new FileReader(args[0]);
-        	FileReader fin = new FileReader("Graph2.txt");
+        	FileReader fin = new FileReader("meme.txt");
             Scanner graphFile = new Scanner( fin );
 
             // Read the edges and insert
@@ -411,16 +441,21 @@ public class Graph
 		String temp;
 		int victimsNo;
 		int hospitalsNo;
+		double checkCost = 0.0;
+		double currentCost = 0.0;
+		int counter = 0;
 
 		String[] Hospitals;
 		String[] Victims;
+		ArrayList<Integer> arl = new ArrayList<Integer>(); 
 
 		// Skipping the first line which represents the number of nodes
-		graphFile.nextLine();	
+		//graphFile.nextLine();	
 
             while( graphFile.hasNextLine( ) )
             {
                 line = graphFile.nextLine( );
+		line = line.replace("\n","").replace("\n","");
                 StringTokenizer st = new StringTokenizer( line );
 
 		num = st.countTokens();
@@ -455,18 +490,38 @@ public class Graph
 			line = graphFile.nextLine();
 			Victims = line.split(" ");
 
-			System.out.println("Cost "+calculateCost(Victims[0],Hospitals[0],g));
+			
 			//For looping for displaying output
-			/*for (int j = 0; j<victimsNo;j++){
-
-				System.out.println("victim "+Victims[j]);
+			for (int j = 0; j<victimsNo;j++){
+				checkCost = calculateCost(Victims[j],Hospitals[0],g);
+				currentCost = calculateCost(Victims[j],Hospitals[0],g);
+				
 				for(int k = 0; k<hospitalsNo;k++){
-					System.out.println("hospitals "+Hospitals[k]);
+					currentCost = calculateCost(Victims[j],Hospitals[k],g);	
+					if(currentCost<=checkCost){
+						if(checkCost == currentCost){
+						arl.add(k);
+						checkCost = calculateCost(Victims[j],Hospitals[k],g);
+						}
+						else{
+						arl.clear();
+						arl.add(k);
+						checkCost = calculateCost(Victims[j],Hospitals[k],g);
+							}
+						}
+						
 					
-					pathN(Victims[j],Hospitals[k],g);
-					System.out.println("Cost "+calculateCost(Victims[j],Hospitals[k],g));
 					}
-				}*/ 
+				System.out.println("victim "+Victims[j]);
+				for(int m = 0; m<arl.size();m++){
+					System.out.println("Hospital "+Hospitals[arl.get(m)]);
+					pathN(Victims[j],Hospitals[arl.get(m)],g);
+					
+					}
+
+				
+				//
+			}
 
 			}
                 
@@ -479,8 +534,8 @@ public class Graph
          catch( IOException e )
            { System.err.println( e ); }
 
-         System.out.println( "File read..." );
-         System.out.println( g.vertexMap.size( ) + " vertices" );
+        // System.out.println( "File read..." );
+         //System.out.println( g.vertexMap.size( ) + " vertices" );
 
 	
 	
